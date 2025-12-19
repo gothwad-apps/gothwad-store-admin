@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gothwad Store | Neon Admin</title>
+    
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --neon-blue: #00f3ff;
+            --neon-purple: #bc13fe;
+            --neon-green: #0aff60;
+            --bg-dark: #050507;
+            --surface: #0f0f13;
+            --surface-glass: rgba(20, 20, 25, 0.7);
+            --border: rgba(255, 255, 255, 0.08);
+            --text-main: #ffffff;
+            --text-muted: #94a3b8;
+            --radius: 16px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
+        
+        body { 
+            background-color: var(--bg-dark); 
+            background-image: radial-gradient(circle at 15% 50%, rgba(188, 19, 254, 0.08), transparent 25%), 
+                              radial-gradient(circle at 85% 30%, rgba(0, 243, 255, 0.08), transparent 25%);
+            color: var(--text-main); 
+            font-size: 14px; 
+            min-height: 100vh;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-dark); }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--neon-blue); }
+
+        /* Login Screen */
+        #login-container {
+            display: flex; height: 100vh; align-items: center; justify-content: center; padding: 20px;
+            position: relative; overflow: hidden;
+        }
+        
+        .login-card {
+            background: rgba(15, 15, 19, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 2.5rem; 
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            box-shadow: 0 0 40px rgba(0, 243, 255, 0.05);
+            width: 100%; max-width: 400px; text-align: center;
+            position: relative; z-index: 10;
+        }
+        
+        .login-card h2 { 
+            margin-bottom: 2rem; 
+            font-size: 1.8rem;
+            background: linear-gradient(to right, #fff, var(--neon-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px rgba(0, 243, 255, 0.3);
+        }
+
+        /* Dashboard Layout */
+        #dashboard-container { display: none; max-width: 1200px; margin: 0 auto; padding: 20px; }
+        
+        header {
+            display: flex; justify-content: space-between; align-items: center;
+            background: var(--surface-glass); 
+            backdrop-filter: blur(15px);
+            padding: 1.2rem; border-radius: var(--radius);
+            border: 1px solid var(--border);
+            margin-bottom: 25px;
+        }
+        
+        .brand { 
+            font-weight: 700; font-size: 1.4rem; display: flex; align-items: center; gap: 12px; 
+            color: var(--neon-blue);
+            text-shadow: 0 0 10px rgba(0, 243, 255, 0.4);
+        }
+        
+        .logout-btn { 
+            background: rgba(255, 50, 50, 0.1); color: #ff4d4d; border: 1px solid rgba(255, 50, 50, 0.2);
+            padding: 8px 16px; border-radius: 8px; cursor: pointer; transition: 0.3s;
+        }
+        .logout-btn:hover { background: rgba(255, 50, 50, 0.2); box-shadow: 0 0 10px rgba(255, 50, 50, 0.2); }
+
+        /* Tabs */
+        .tabs { 
+            display: flex; gap: 15px; margin-bottom: 25px; overflow-x: auto; padding-bottom: 5px; 
+        }
+        .tab-btn {
+            background: var(--surface); border: 1px solid var(--border); 
+            color: var(--text-muted);
+            padding: 12px 24px;
+            border-radius: 12px; cursor: pointer; white-space: nowrap; font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        .tab-btn:hover { color: #fff; border-color: rgba(255,255,255,0.2); }
+        .tab-btn.active { 
+            background: rgba(0, 243, 255, 0.1); 
+            color: var(--neon-blue); 
+            border-color: var(--neon-blue); 
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.15);
+        }
+
+        /* Content Sections */
+        .section { 
+            display: none; 
+            background: var(--surface); 
+            padding: 30px; 
+            border-radius: var(--radius); 
+            border: 1px solid var(--border);
+            position: relative;
+        }
+        .section.active { display: block; animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+
+        h3 { color: #fff; margin-bottom: 20px; font-weight: 600; letter-spacing: 0.5px; }
+
+        /* Forms */
+        .form-group { margin-bottom: 20px; text-align: left; }
+        label { display: block; margin-bottom: 8px; font-weight: 500; color: var(--text-muted); font-size: 0.9rem; }
+        
+        input, select, textarea {
+            width: 100%; padding: 14px; 
+            background: #09090b; 
+            border: 1px solid #27272a; 
+            color: #fff;
+            border-radius: 10px;
+            font-size: 14px; outline: none; transition: 0.3s;
+        }
+        input:focus, textarea:focus, select:focus { 
+            border-color: var(--neon-purple); 
+            box-shadow: 0 0 0 2px rgba(188, 19, 254, 0.15); 
+        }
+        textarea { resize: vertical; min-height: 100px; }
+        
+        .btn {
+            background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));
+            color: white; border: none; padding: 14px;
+            border-radius: 10px; cursor: pointer; width: 100%; font-weight: 600; font-size: 1rem;
+            margin-top: 10px; transition: 0.3s;
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+        .btn:hover { 
+            box-shadow: 0 0 20px rgba(188, 19, 254, 0.4); 
+            transform: translateY(-2px);
+        }
+        
+        /* App List */
+        .app-item {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 18px; 
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 12px;
+            transition: 0.3s;
+        }
+        .app-item:hover { 
+            border-color: var(--neon-blue); 
+            background: rgba(0, 243, 255, 0.03);
+            transform: translateX(5px);
+        }
+        .app-info { display: flex; align-items: center; gap: 15px; }
+        .app-thumb { width: 55px; height: 55px; border-radius: 12px; object-fit: cover; background: #222; border: 1px solid #333; }
+        .app-text h4 { font-size: 16px; margin-bottom: 4px; color: #fff; }
+        .app-text p { font-size: 12px; color: var(--text-muted); }
+        .app-category-tag { 
+            font-size: 10px; padding: 2px 8px; border-radius: 20px; 
+            background: rgba(255,255,255,0.1); margin-right: 5px; 
+        }
+
+        .app-actions { display: flex; gap: 10px; }
+        .action-btn { 
+            width: 36px; height: 36px; border-radius: 8px; border: none; cursor: pointer; 
+            display: flex; align-items: center; justify-content: center; 
+            transition: 0.2s; font-size: 14px;
+        }
+        .btn-edit { background: rgba(0, 243, 255, 0.1); color: var(--neon-blue); border: 1px solid rgba(0, 243, 255, 0.2); }
+        .btn-edit:hover { background: var(--neon-blue); color: #000; box-shadow: 0 0 10px var(--neon-blue); }
+        
+        .btn-delete { background: rgba(255, 50, 50, 0.1); color: #ff4d4d; border: 1px solid rgba(255, 50, 50, 0.2); }
+        .btn-delete:hover { background: #ff4d4d; color: #fff; box-shadow: 0 0 10px #ff4d4d; }
+
+        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Toast Notification */
+        #toast {
+            visibility: hidden; min-width: 250px; 
+            background: rgba(20, 20, 20, 0.9); border: 1px solid var(--neon-blue);
+            color: #fff; text-align: center; border-radius: 8px; padding: 16px; 
+            position: fixed; z-index: 1000; bottom: 30px; left: 50%; 
+            transform: translateX(-50%); box-shadow: 0 0 15px rgba(0, 243, 255, 0.2);
+        }
+        #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
+
+        @media (max-width: 600px) {
+            .app-item { flex-direction: column; align-items: flex-start; gap: 15px; }
+            .app-actions { width: 100%; justify-content: flex-end; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Login Container -->
+    <div id="login-container">
+        <div class="login-card">
+            <h2><i class="fa-solid fa-ghost"></i> Gothwad Admin</h2>
+            <div class="form-group">
+                <input type="email" id="admin-email" placeholder="Admin Email">
+            </div>
+            <div class="form-group">
+                <input type="password" id="admin-password" placeholder="Password">
+            </div>
+            <button class="btn" onclick="login()">Enter System</button>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <div id="dashboard-container">
+        <header>
+            <div class="brand">
+                <i class="fa-brands fa-android"></i> Gothwad Store
+            </div>
+            <button class="logout-btn" onclick="logout()"><i class="fa-solid fa-power-off"></i> Logout</button>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="showSection('manage-apps')"><i class="fa-solid fa-list"></i> Manage Apps</button>
+            <button class="tab-btn" onclick="showSection('add-app')"><i class="fa-solid fa-cloud-arrow-up"></i> Add New App</button>
+            <button class="tab-btn" onclick="showSection('store-settings')"><i class="fa-solid fa-sliders"></i> Settings & UPI</button>
+        </div>
+
+        <!-- 1. Manage Apps Section -->
+        <div id="manage-apps" class="section active">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <h3>Installed Apps</h3>
+                <span id="app-count" style="color:var(--text-muted); font-size:0.9rem;">0 Apps</span>
+            </div>
+            <div id="app-list-container">
+                <!-- Apps loaded dynamically here -->
+                <p style="text-align:center; color:var(--text-muted); padding:40px; border:1px dashed var(--border); border-radius:10px;">
+                    <i class="fa-solid fa-spinner fa-spin"></i> Loading Gothwad Database...
+                </p>
+            </div>
+        </div>
+
+        <!-- 2. Add/Edit App Section -->
+        <div id="add-app" class="section">
+            <h3 id="form-title">Submit New App</h3>
+            <input type="hidden" id="edit-app-id"> <!-- Hidden ID for editing -->
+            
+            <div class="form-group">
+                <label>App Title</label>
+                <input type="text" id="app-title" placeholder="e.g. PubG Mobile">
+            </div>
+            
+            <div class="form-group">
+                <label>Subtitle / Short Description</label>
+                <input type="text" id="app-subtitle" placeholder="e.g. Battle Royale Action">
+            </div>
+
+            <div class="form-group">
+                <label>Category</label>
+                <select id="app-category">
+                    <option value="App">App</option>
+                    <option value="Game">Game</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Logo URL</label>
+                <input type="url" id="app-logo" placeholder="https://example.com/logo.png">
+            </div>
+
+            <div class="form-group">
+                <label>Description</label>
+                <textarea id="app-desc" placeholder="Full app description..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Permissions (Optional)</label>
+                <textarea id="app-perms" placeholder="Camera, Storage, Network..." style="min-height:60px"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Screenshots URLs (Comma separated)</label>
+                <textarea id="app-screens" placeholder="url1.jpg, url2.jpg, url3.jpg" style="min-height:60px"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Download Link (APK/PlayStore)</label>
+                <input type="url" id="app-link" placeholder="https://example.com/app.apk">
+            </div>
+
+            <button class="btn" onclick="submitApp()" id="submit-btn">Publish to Store</button>
+            <button class="btn" onclick="resetForm()" style="background:#334155; margin-top:10px; display:none; border:1px solid #475569;" id="cancel-edit-btn">Cancel Edit</button>
+        </div>
+
+        <!-- 3. Settings Section -->
+        <div id="store-settings" class="section">
+            <h3>Store Configuration</h3>
+            <div class="form-group" style="margin-top: 15px;">
+                <label>Store Name</label>
+                <input type="text" id="store-name" placeholder="Gothwad Store">
+            </div>
+            <div class="form-group">
+                <label>Store Logo URL</label>
+                <input type="url" id="store-logo" placeholder="https://...">
+            </div>
+            <button class="btn" onclick="saveSettings()">Save Branding</button>
+
+            <div style="height:1px; background:var(--border); margin: 30px 0;"></div>
+
+            <h3>Donation Setup (UPI)</h3>
+            <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:15px;">This controls the donate button on the user side.</p>
+            <div class="form-group">
+                <label>UPI ID (VPA)</label>
+                <input type="text" id="upi-id" placeholder="example@oksbi">
+            </div>
+            <button class="btn" style="background: linear-gradient(135deg, var(--neon-green), #059669);" onclick="saveUPI()">Update Payment ID</button>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast"><i class="fa-solid fa-circle-check"></i> Notification</div>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getDatabase, ref, set, push, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        // CONFIGURATION
+        const firebaseConfig = {
+            apiKey: "AIzaSyD5hl-nbH4z8N5gKWdX3zuY9Sc1UZZr1cw",
+            authDomain: "app-store-838cc.firebaseapp.com",
+            databaseURL: "https://app-store-838cc-default-rtdb.firebaseio.com",
+            projectId: "app-store-838cc",
+            storageBucket: "app-store-838cc.firebasestorage.app",
+            messagingSenderId: "679952030452",
+            appId: "1:679952030452:web:129b6a971d75af8c7cdca1"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+
+        // --- GLOBAL FUNCTIONS EXPORT ---
+        window.login = login;
+        window.logout = logout;
+        window.showSection = showSection;
+        window.submitApp = submitApp;
+        window.editApp = editApp;
+        window.deleteApp = deleteApp;
+        window.resetForm = resetForm;
+        window.saveSettings = saveSettings;
+        window.saveUPI = saveUPI;
+
+        // --- AUTHENTICATION ---
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.getElementById('login-container').style.display = 'none';
+                document.getElementById('dashboard-container').style.display = 'block';
+                loadApps();
+                loadSettings();
+            } else {
+                document.getElementById('login-container').style.display = 'flex';
+                document.getElementById('dashboard-container').style.display = 'none';
+            }
+        });
+
+        function login() {
+            const email = document.getElementById('admin-email').value;
+            const pass = document.getElementById('admin-password').value;
+            if(!email || !pass) return showToast('Enter credentials');
+            
+            signInWithEmailAndPassword(auth, email, pass)
+                .catch((error) => showToast("Login failed: " + error.message));
+        }
+
+        function logout() {
+            signOut(auth).then(() => showToast('Logged out'));
+        }
+
+        // --- DASHBOARD UI LOGIC ---
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById(sectionId).classList.add('active');
+            
+            // Highlight tab logic
+            const tabs = document.querySelectorAll('.tab-btn');
+            if(sectionId === 'manage-apps') tabs[0].classList.add('active');
+            if(sectionId === 'add-app') tabs[1].classList.add('active');
+            if(sectionId === 'store-settings') tabs[2].classList.add('active');
+        }
+
+        function showToast(msg) {
+            const x = document.getElementById("toast");
+            x.innerHTML = `<i class="fa-solid fa-bell"></i> ${msg}`;
+            x.className = "show";
+            setTimeout(() => { x.className = x.className.replace("show", ""); }, 3000);
+        }
+
+        // --- DATA LOGIC ---
+
+        // 1. SETTINGS & UPI
+        function loadSettings() {
+            const settingsRef = ref(db, 'settings');
+            onValue(settingsRef, (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    if(data.storeName) document.getElementById('store-name').value = data.storeName;
+                    if(data.storeLogo) document.getElementById('store-logo').value = data.storeLogo;
+                    if(data.upiId) document.getElementById('upi-id').value = data.upiId;
+                }
+            });
+        }
+
+        function saveSettings() {
+            const name = document.getElementById('store-name').value;
+            const logo = document.getElementById('store-logo').value;
+            update(ref(db, 'settings'), {
+                storeName: name,
+                storeLogo: logo
+            }).then(() => showToast('Branding Saved'));
+        }
+
+        function saveUPI() {
+            const upi = document.getElementById('upi-id').value;
+            update(ref(db, 'settings'), {
+                upiId: upi
+            }).then(() => showToast('UPI Updated'));
+        }
+
+        // 2. APP MANAGEMENT
+        function submitApp() {
+            const id = document.getElementById('edit-app-id').value;
+            const title = document.getElementById('app-title').value;
+            const subtitle = document.getElementById('app-subtitle').value;
+            const category = document.getElementById('app-category').value;
+            const logo = document.getElementById('app-logo').value;
+            const desc = document.getElementById('app-desc').value;
+            const perms = document.getElementById('app-perms').value;
+            const screensRaw = document.getElementById('app-screens').value;
+            const link = document.getElementById('app-link').value;
+
+            if(!title || !link) return showToast("Title and Download Link are required!");
+
+            // Process screenshots
+            const screenshots = screensRaw.split(',').map(s => s.trim()).filter(s => s !== "");
+
+            const appData = {
+                title, subtitle, category, logo, description: desc,
+                permissions: perms, screenshots, downloadLink: link,
+                updatedAt: Date.now()
+            };
+
+            if (id) {
+                update(ref(db, 'apps/' + id), appData).then(() => {
+                    showToast('App Updated Successfully');
+                    resetForm();
+                    showSection('manage-apps');
+                });
+            } else {
+                const newAppRef = push(ref(db, 'apps'));
+                set(newAppRef, appData).then(() => {
+                    showToast('App Published Successfully');
+                    resetForm();
+                    showSection('manage-apps');
+                });
+            }
+        }
+
+        function loadApps() {
+            const appsRef = ref(db, 'apps');
+            onValue(appsRef, (snapshot) => {
+                const container = document.getElementById('app-list-container');
+                container.innerHTML = "";
+                const data = snapshot.val();
+                
+                if (!data) {
+                    container.innerHTML = "<p style='text-align:center; padding:20px; color:#555'>No apps configured yet.</p>";
+                    document.getElementById('app-count').innerText = "0 Apps";
+                    return;
+                }
+
+                const keys = Object.keys(data);
+                document.getElementById('app-count').innerText = `${keys.length} Apps`;
+
+                keys.forEach((key) => {
+                    const app = data[key];
+                    const item = document.createElement('div');
+                    item.className = 'app-item';
+                    item.innerHTML = `
+                        <div class="app-info">
+                            <img src="${app.logo || 'https://via.placeholder.com/50'}" class="app-thumb" onerror="this.src='https://via.placeholder.com/50'">
+                            <div class="app-text">
+                                <h4>${app.title}</h4>
+                                <p><span class="app-category-tag">${app.category}</span> ${app.subtitle}</p>
+                            </div>
+                        </div>
+                        <div class="app-actions">
+                            <button class="action-btn btn-edit" onclick="editApp('${key}')" title="Edit">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </button>
+                            <button class="action-btn btn-delete" onclick="deleteApp('${key}')" title="Delete">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
+                    `;
+                    container.appendChild(item);
+                });
+            });
+        }
+
+        function deleteApp(id) {
+            if(confirm('Delete this app permanently?')) {
+                remove(ref(db, 'apps/' + id))
+                    .then(() => showToast('App deleted'));
+            }
+        }
+
+        function editApp(id) {
+            const dbRef = ref(db, 'apps/' + id);
+            onValue(dbRef, (snapshot) => {
+                const data = snapshot.val();
+                if(data) {
+                    document.getElementById('edit-app-id').value = id;
+                    document.getElementById('app-title').value = data.title;
+                    document.getElementById('app-subtitle').value = data.subtitle;
+                    document.getElementById('app-category').value = data.category;
+                    document.getElementById('app-logo').value = data.logo;
+                    document.getElementById('app-desc').value = data.description;
+                    document.getElementById('app-perms').value = data.permissions || "";
+                    document.getElementById('app-screens').value = data.screenshots ? data.screenshots.join(', ') : "";
+                    document.getElementById('app-link').value = data.downloadLink;
+
+                    // UI Changes
+                    document.getElementById('form-title').innerText = "Edit App";
+                    document.getElementById('submit-btn').innerText = "Update App";
+                    document.getElementById('cancel-edit-btn').style.display = "block";
+                    showSection('add-app');
+                }
+            }, { onlyOnce: true });
+        }
+
+        function resetForm() {
+            document.getElementById('edit-app-id').value = "";
+            document.getElementById('app-title').value = "";
+            document.getElementById('app-subtitle').value = "";
+            document.getElementById('app-category').value = "App";
+            document.getElementById('app-logo').value = "";
+            document.getElementById('app-desc').value = "";
+            document.getElementById('app-perms').value = "";
+            document.getElementById('app-screens').value = "";
+            document.getElementById('app-link').value = "";
+            
+            document.getElementById('form-title').innerText = "Submit New App";
+            document.getElementById('submit-btn').innerText = "Publish to Store";
+            document.getElementById('cancel-edit-btn').style.display = "none";
+        }
+    </script>
+</body>
+</html>
